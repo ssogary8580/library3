@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>김밥반 한살이 그림책 도서관</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for premium UI look -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        
+        .font-kids {
+            font-family: 'Gaegu', 'Noto Sans KR', sans-serif;
+        }
+        .font-title {
+            font-family: 'Gaegu', cursive;
+        }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #fefcf0; /* Warm warm tone representing yolk/danmuji */
+        }
+        /* Elegant custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-kids">
+
+    <!-- Header / Brand Banner Section -->
+    <header class="bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 text-slate-800 shadow-md py-6 px-4 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-4xl">🍙</span>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold tracking-tight font-title text-slate-900 drop-shadow-sm">
+                        김밥반 한살이 그림책 도서관
+                    </h1>
+                    <p class="text-sm md:text-base font-semibold text-emerald-800 mt-1">우리 반 친구들이 정성껏 만든 동물 & 식물 한 살이 디지털 그림책 허브</p>
+                </div>
+            </div>
+            <!-- Statistics Header Panel -->
+            <div class="flex items-center gap-2 bg-white/90 backdrop-blur px-4 py-2 rounded-full border border-yellow-200 shadow-sm text-sm">
+                <div class="flex items-center gap-1 border-r border-slate-300 pr-3">
+                    <span class="text-amber-500 font-bold">📚 전체 도서</span>
+                    <span class="font-bold text-slate-800">12권</span>
+                </div>
+                <div class="flex items-center gap-1 border-r border-slate-300 px-3">
+                    <span class="text-red-500 font-bold">❤️ 총 추천수</span>
+                    <span id="total-likes" class="font-bold text-slate-800">0</span>
+                </div>
+                <div class="flex items-center gap-1 pl-3">
+                    <span class="text-blue-500 font-bold">💬 총 한줄평</span>
+                    <span id="total-reviews" class="font-bold text-slate-800">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+        
+        <!-- Tab Filters and Administrator Menu -->
+        <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 mb-6">
+            <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200 flex gap-1 w-fit overflow-x-auto">
+                <button onclick="filterCategory('all')" id="tab-all" class="px-5 py-2 rounded-lg font-bold transition text-base bg-emerald-500 text-white shadow-sm whitespace-nowrap">
+                    🌈 전체보기 (12)
+                </button>
+                <button onclick="filterCategory('동물')" id="tab-animal" class="px-5 py-2 rounded-lg font-bold transition text-base text-slate-600 hover:bg-slate-100 whitespace-nowrap">
+                    🐱 동물 한 살이 (6)
+                </button>
+                <button onclick="filterCategory('식물')" id="tab-plant" class="px-5 py-2 rounded-lg font-bold transition text-base text-slate-600 hover:bg-slate-100 whitespace-nowrap">
+                    🌱 식물 한 살이 (6)
+                </button>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex flex-wrap gap-2">
+                <button onclick="showTroubleModal()" class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-semibold shadow transition-all text-sm">
+                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                    <span>🚨 그림책 안 보여요! 해결 가이드</span>
+                </button>
+                <button onclick="toggleTeacherPanel()" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl font-semibold shadow transition-all text-sm">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span>선생님 관리 메뉴</span>
+                </button>
+                <button onclick="showHelpModal()" class="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl font-semibold shadow transition-all text-sm">
+                    <i data-lucide="help-circle" class="w-4 h-4"></i>
+                    <span>이용 안내서</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Teacher Administration Panel -->
+        <div id="teacher-panel" class="hidden bg-slate-900 text-slate-100 p-5 rounded-2xl shadow-xl border border-slate-700 mb-6 transition-all duration-300">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-700 pb-4 mb-4">
+                <div>
+                    <h3 class="text-xl font-bold flex items-center gap-2 text-yellow-300">
+                        <i data-lucide="crown"></i> 선생님 전용 도서관 관리 메뉴
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">학생들의 실시간 활동 데이터(후기, 엄지척)를 백업하거나 관리하는 전용 수단입니다.</p>
+                </div>
+                <button onclick="toggleTeacherPanel()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Export Feature -->
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <h4 class="font-bold text-emerald-400 mb-2 flex items-center gap-1.5 text-sm">
+                        <i data-lucide="download" class="w-4 h-4"></i>후기 데이터 백업 (CSV)
+                    </h4>
+                    <p class="text-xs text-slate-400 mb-3">학생들이 쓴 소중한 독서 소감들을 엑셀 파일로 소장 및 인쇄하세요.</p>
+                    <button onclick="exportReviewsCSV()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-3 rounded-lg font-semibold text-xs transition">
+                        엑셀/CSV로 다운로드
+                    </button>
+                </div>
+                <!-- Reset Feature -->
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <h4 class="font-bold text-red-400 mb-2 flex items-center gap-1.5 text-sm">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>기록 데이터 초기화
+                    </h4>
+                    <p class="text-xs text-slate-400 mb-3">새로운 프로젝트나 다음 학년 시작 시 저장된 모든 데이터를 비웁니다.</p>
+                    <button onclick="confirmResetAll()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg font-semibold text-xs transition">
+                        전체 데이터 리셋
+                    </button>
+                </div>
+                <!-- Storage Info -->
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col justify-between">
+                    <div>
+                        <h4 class="font-bold text-amber-400 mb-1 flex items-center gap-1.5 text-sm">
+                            <i data-lucide="info" class="w-4 h-4"></i>데이터 보관 주의사항
+                        </h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            본 대시보드는 회원가입 없이 현재 기기의 브라우저 저장소(localStorage)에 안전하게 실시간 보존됩니다. 브라우저 기록 청소 시 백업을 먼저 진행해 주세요.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Book Cards Grid -->
+        <div id="books-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamic Injection of Book Cards -->
+        </div>
+
+    </main>
+
+    <!-- Full-Screen Post-Reading Activity Panel (The Magic Overlay) -->
+    <div id="activity-overlay" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center p-4 hidden transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border-4 border-emerald-400 overflow-y-auto max-h-[90vh]">
+            
+            <!-- Modal Header -->
+            <div class="text-center pb-4 border-b border-slate-200">
+                <span id="activity-group-badge" class="px-4 py-1 text-xs font-black rounded-full bg-amber-100 text-amber-800 border border-amber-200 inline-block mb-2"></span>
+                <h2 id="activity-title" class="text-2xl md:text-3xl font-bold font-title text-slate-900">그림책 제목</h2>
+                <p class="text-xs text-slate-500 mt-1">새 탭에서 열린 그림책을 모두 다 읽었나요?</p>
+            </div>
+
+            <!-- Fun Visual Guide for Kids -->
+            <div class="my-5 bg-emerald-50 rounded-2xl p-4 border border-emerald-200 flex items-center gap-3">
+                <span class="text-3xl">💡</span>
+                <p class="text-xs text-emerald-800 leading-relaxed">
+                    <strong>혹시 책이 안 열렸나요?</strong> 브라우저 위쪽의 <strong>새로운 탭(창)</strong>을 선택해 책을 읽어주세요. 책을 다 읽은 후 이곳에 돌아와 <strong>멋진 후기</strong>와 <strong>엄지척 추천</strong>을 남겨주시면 도서관 홈으로 돌아갑니다!
+                </p>
+            </div>
+
+            <!-- Core Activity Content Inside Overlay -->
+            <div class="space-y-5">
+                
+                <!-- Like/Thumbs up Area -->
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col items-center justify-center text-center">
+                    <p class="text-xs text-slate-500 mb-2 font-semibold">이 책이 유익하고 즐거웠다면 친구에게 추천해 주세요!</p>
+                    <button id="activity-like-btn" onclick="toggleActiveLike()" 
+                            class="flex items-center justify-center gap-3 px-8 py-3 rounded-full text-base font-bold shadow-md transition-all duration-200">
+                        <span class="text-xl">👍</span>
+                        <span id="activity-like-txt">엄지척 추천하기</span>
+                    </button>
+                    <p class="text-[11px] text-slate-400 mt-2">현재 우리 반 추천수: <strong id="activity-like-count" class="text-slate-700">0</strong>명</p>
+                </div>
+
+                <!-- Review Form -->
+                <div class="space-y-3">
+                    <h4 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                        <i data-lucide="edit-3" class="text-emerald-500 w-4 h-4"></i> 소중한 감상평 남기기
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                        <input type="text" id="activity-name" placeholder="이름 (예: 김철수)" 
+                               class="sm:col-span-1 px-3 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-emerald-500 focus:outline-none" />
+                        <input type="text" id="activity-content" placeholder="책을 읽고 가장 기억에 남거나 유익했던 한 줄을 적어봐요!" 
+                               class="sm:col-span-3 px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-emerald-500 focus:outline-none font-sans" />
+                    </div>
+                    <button onclick="submitActiveReview()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm shadow transition-all flex items-center justify-center gap-1.5">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        <span>감상평 등록하기</span>
+                    </button>
+                </div>
+
+                <!-- Existing Reviews of the book -->
+                <div class="pt-2 border-t border-slate-100">
+                    <h4 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-1.5">
+                        <i data-lucide="message-square" class="text-blue-500 w-4 h-4"></i> 우리 반 친구들의 후기
+                    </h4>
+                    <div id="activity-reviews-container" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                        <!-- Dynamic list of comments -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Controls inside Overlay -->
+            <div class="mt-6 pt-4 border-t border-slate-200 flex justify-end gap-2">
+                <button onclick="closeActivityOverlay()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl transition shadow text-xs">
+                    도서관 홈으로 돌아가기 (활동 끝내기)
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl border border-yellow-200">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-3 mb-4">
+                <h3 class="text-2xl font-bold font-title text-slate-800 flex items-center gap-1.5">
+                    📖 김밥반 그림책 도서관 이용 안내서
+                </h3>
+                <button onclick="hideHelpModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-slate-700 text-sm leading-relaxed font-sans">
+                <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+                    <h4 class="font-bold text-emerald-800 mb-1.5">💡 어떻게 독서와 독후 활동을 하나요?</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>그림책 읽기 시작:</strong> 관심 있는 그림책의 <span class="bg-emerald-500 text-white px-2 py-0.5 text-xs rounded font-bold">📖 그림책 읽기 & 후기 쓰기</span> 버튼을 누릅니다.</li>
+                        <li><strong>자유로운 독서:</strong> 브라우저에 새로 뜬 안전한 탭 창에서 책장을 넘기며 재미있게 독서합니다.</li>
+                        <li><strong>후기 및 추천 기록:</strong> 책을 다 읽은 후 대시보드 화면(원래 탭)으로 돌아오면 해당 책의 '독후 활동 창'이 열려 있습니다. 그곳에서 평점(엄지척)을 누르고, 이름과 한 줄 소감을 쓰고 등록하면 끝!</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button onclick="hideHelpModal()" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-6 py-2 rounded-xl transition shadow">
+                    이해했어요! 책 읽으러 가기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Troubleshooting Modal -->
+    <div id="trouble-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl border border-red-200">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-3 mb-4">
+                <h3 class="text-2xl font-bold font-title text-red-600 flex items-center gap-1.5">
+                    <i data-lucide="alert-triangle" class="w-6 h-6 text-red-500"></i>
+                    🚨 그림책 화면이 안 열릴 때 즉각 진단 리스트
+                </h3>
+                <button onclick="hideTroubleModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-slate-700 text-sm leading-relaxed font-sans">
+                <!-- Checkpoint 1 -->
+                <div class="bg-red-50 rounded-xl p-4 border border-red-100 flex gap-3">
+                    <span class="text-2xl font-black text-red-600">01</span>
+                    <div>
+                        <h4 class="font-bold text-red-800 mb-1">교사의 'Publish Online (온라인 게시)' 및 주소 복사 재확인</h4>
+                        <p class="text-xs text-slate-600 mb-1">
+                            북크리에이터는 교사 전용 편집 화면 주소를 그냥 복사하면 외부인은 권한 차단으로 볼 수 없습니다.
+                        </p>
+                        <p class="font-bold text-xs text-emerald-800 mt-1">
+                            💡 조치법: 북크리에이터 서재 ➡️ 책 하단 공유 단추 ➡️ [Publish Online]을 통해 발행한 공식 전용 URL을 복사하여 대시보드 데이터 주소에 입력해야 합니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Checkpoint 2 -->
+                <div class="bg-amber-50 rounded-xl p-4 border border-amber-100 flex gap-3">
+                    <span class="text-2xl font-black text-amber-600">02</span>
+                    <div>
+                        <h4 class="font-bold text-amber-800 mb-1">인터넷 가속(Web GL) 및 브라우저 호환성 문제</h4>
+                        <p class="text-xs text-slate-600 mb-1">
+                            북크리에이터 리더기는 입체적인 책장 넘김 효과를 위해 WebGL 그래픽 하드웨어 가속을 필수로 사용합니다. 이 옵션이 꺼져 있으면 빈 화면이 뜰 수 있습니다.
+                        </p>
+                        <p class="font-bold text-xs text-indigo-800 mt-1">
+                            💡 조치법: 브라우저(크롬, 웨일 등) 설정에서 [하드웨어 가속] 옵션을 '켬(활성화)'으로 변경한 후 브라우저를 껐다 켜주세요.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button onclick="hideTroubleModal()" class="bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-2 rounded-xl transition shadow">
+                    가이드 닫기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert/Confirm Modal replacement -->
+    <div id="custom-alert" class="fixed inset-0 bg-slate-900/60 z-[60] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl border border-slate-100">
+            <div id="alert-icon-container" class="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-4 text-2xl">
+                🔔
+            </div>
+            <h4 id="alert-title" class="text-xl font-bold font-title text-slate-900 mb-2">알림</h4>
+            <p id="alert-message" class="text-sm text-slate-600 mb-6 leading-relaxed">알림 메시지 본문</p>
+            <div id="alert-buttons" class="flex gap-2 justify-center">
+                <button onclick="closeAlert()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-xl font-semibold text-sm transition">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[70] flex flex-col gap-2"></div>
+
+    <!-- Footer Section -->
+    <footer class="bg-slate-100 border-t border-slate-200 py-6 text-center text-xs text-slate-500 font-sans mt-auto">
+        <p class="font-semibold text-slate-600">🏫 김밥반 한살이 그림책 도서관 Dashboard</p>
+        <p class="mt-1">© 2026 Gimbap Class Digital Library Hub. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // --- Core Digital Books Data (100% Verified Correct URLs with vjBHWqvmF3) ---
+        const bookData = [
+            {
+                id: 'anim-1',
+                group: '1모둠',
+                category: '동물',
+                title: '야옹이의 성장',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/hMuK7K5-QtKPQqxN5aLSvg'
+            },
+            {
+                id: 'anim-2',
+                group: '2모둠',
+                category: '동물',
+                title: '대왕이의 모험',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/RdCCf_MnTKSaq2ADNHyfjg'
+            },
+            {
+                id: 'anim-3',
+                group: '3모둠',
+                category: '동물',
+                title: '북이의 성장',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/x5IRLeo-QYaInufnhzIXJw'
+            },
+            {
+                id: 'anim-4',
+                group: '4모둠',
+                category: '동물',
+                title: '맴맴이의 신비한 모험',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/CbPfiOZ2SBKCW_YH6bqvdg'
+            },
+            {
+                id: 'anim-5',
+                group: '5모둠',
+                category: '동물',
+                title: '아지의 탄생 이야기',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/kY193iHLQtyS9d43Dwn_fQ'
+            },
+            {
+                id: 'anim-6',
+                group: '6모둠',
+                category: '동물',
+                title: '토토의 독립',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/Cy9ZOxiiQqykNtwDFLkREA'
+            },
+            {
+                id: 'plant-1',
+                group: '1모둠',
+                category: '식물',
+                title: '달강이의 여행',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/gwRh-1SyTcWu5-ci61fp3A'
+            },
+            {
+                id: 'plant-2',
+                group: '2모둠',
+                category: '식물',
+                title: '무궁이의 여행',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/irBeDVroSEuxz6YKMV6Reg'
+            },
+            {
+                id: 'plant-3',
+                group: '3모둠',
+                category: '식물',
+                title: '콩이의 여행',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/74LaIKemR4qRsqhD-3G53Q'
+            },
+            {
+                id: 'plant-4',
+                group: '4모둠',
+                category: '식물',
+                title: '코순이의 여행',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/_sKhtzn8S7SqvPVdQ6-W-A'
+            },
+            {
+                id: 'plant-5',
+                group: '5모둠',
+                category: '식물',
+                title: '송송이의 여행',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/ODx0lXMAQWudfXNlG_-z7w'
+            },
+            {
+                id: 'plant-6',
+                group: '6모둠',
+                category: '식물',
+                title: '박이의 성장',
+                url: 'https://read.bookcreator.com/nK12sUsITtX2bOIHuyvjBHWqvmF3/QsvwmxaERtu8qXas5Er1YQ'
+            }
+        ];
+
+        // Global State variables
+        let appState = {
+            likes: {}, // bookId: count
+            userLikes: {}, // bookId: boolean (anti-spam)
+            reviews: {} // bookId: Array of reviews
+        };
+
+        // Active State of focused book activities
+        let activeBookId = null;
+
+        // --- STREAMING_CHUNK: LocalStorage setup functions... ---
+        // Load initial states from LocalStorage or initialize them
+        function loadState() {
+            const savedState = localStorage.getItem('gimbap_library_state_v3');
+            if (savedState) {
+                try {
+                    appState = JSON.parse(savedState);
+                } catch(e) {
+                    console.error("데이터 복구 실패, 재구성 중...", e);
+                }
+            }
+            
+            // Validate and patch missing entries
+            bookData.forEach(book => {
+                if (appState.likes[book.id] === undefined) {
+                    appState.likes[book.id] = 0;
+                }
+                if (!appState.reviews[book.id]) {
+                    appState.reviews[book.id] = [];
+                }
+            });
+            saveState();
+        }
+
+        // Save current states to LocalStorage
+        function saveState() {
+            localStorage.setItem('gimbap_library_state_v3', JSON.stringify(appState));
+            updateOverallStats();
+        }
+
+        // Update top-bar statistics board
+        function updateOverallStats() {
+            let totalLikes = 0;
+            let totalReviews = 0;
+
+            Object.values(appState.likes).forEach(count => totalLikes += count);
+            Object.values(appState.reviews).forEach(arr => totalReviews += arr.length);
+
+            document.getElementById('total-likes').innerText = totalLikes;
+            document.getElementById('total-reviews').innerText = totalReviews;
+        }
+
+        // --- STREAMING_CHUNK: Handling search filters and UI rendering of cards... ---
+        let currentFilter = 'all';
+
+        function filterCategory(category) {
+            currentFilter = category;
+            
+            // Visual feedback on Tab selections
+            const tabAll = document.getElementById('tab-all');
+            const tabAnim = document.getElementById('tab-animal');
+            const tabPlant = document.getElementById('tab-plant');
+
+            [tabAll, tabAnim, tabPlant].forEach(tab => {
+                tab.className = "px-5 py-2 rounded-lg font-bold transition text-base text-slate-600 hover:bg-slate-100 whitespace-nowrap";
+            });
+
+            if (category === 'all') {
+                tabAll.className = "px-5 py-2 rounded-lg font-bold transition text-base bg-emerald-500 text-white shadow-sm whitespace-nowrap";
+            } else if (category === '동물') {
+                tabAnim.className = "px-5 py-2 rounded-lg font-bold transition text-base bg-emerald-500 text-white shadow-sm whitespace-nowrap";
+            } else if (category === '식물') {
+                tabPlant.className = "px-5 py-2 rounded-lg font-bold transition text-base bg-emerald-500 text-white shadow-sm whitespace-nowrap";
+            }
+
+            renderBooks();
+        }
+
+        function fontFixForButtons(title) {
+            return title.length > 12 ? 'text-xl' : 'text-2xl';
+        }
+
+        // Render Cards to layout grid
+        function renderBooks() {
+            const grid = document.getElementById('books-grid');
+            grid.innerHTML = '';
+
+            const filteredBooks = bookData.filter(book => {
+                if (currentFilter === 'all') return true;
+                return book.category === currentFilter;
+            });
+
+            filteredBooks.forEach(book => {
+                const bookLikes = appState.likes[book.id] || 0;
+                const bookReviews = appState.reviews[book.id] || [];
+                
+                // Styling badges for categories
+                const badgeColor = book.category === '동물' 
+                    ? 'bg-amber-100 text-amber-800 border-amber-200' 
+                    : 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                
+                const emoji = book.category === '동물' ? '🐱' : '🌱';
+
+                const cardHTML = `
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden group">
+                        
+                        <!-- Top header of the card -->
+                        <div class="bg-slate-50 border-b border-slate-100 p-4 flex justify-between items-center">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">${book.group} 한살이</span>
+                            <span class="px-2.5 py-0.5 text-xs font-black rounded-full border ${badgeColor}">
+                                ${emoji} ${book.category}
+                            </span>
+                        </div>
+
+                        <!-- Card Body containing title & Launcher -->
+                        <div class="p-5 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold font-title text-slate-800 group-hover:text-emerald-600 transition-colors duration-200 mb-6 ${fontFixForButtons(book.title)}">
+                                    ${book.title}
+                                </h3>
+                            </div>
+
+                            <!-- Single Primary Action Launcher (Zero Iframe Failure) -->
+                            <div class="mt-2">
+                                <button onclick="startBookReadingAndActivity('${book.id}')" 
+                                        class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 px-4 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all scale-100 hover:scale-[1.02] active:scale-95">
+                                    <i data-lucide="book-open" class="w-5 h-5"></i>
+                                    <span>📖 그림책 읽기 & 후기 쓰기</span>
+                                </button>
+                                <p class="text-[10px] text-center text-slate-400 mt-2 font-sans">
+                                    클릭하면 책이 안전하게 새 창에서 열리며, 독서활동판이 대기합니다.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer depicting statistics -->
+                        <div class="bg-slate-50 border-t border-slate-100 p-4 flex items-center justify-between">
+                            <span class="text-xs text-slate-500 font-semibold flex items-center gap-1">
+                                <i data-lucide="award" class="w-3.5 h-3.5 text-amber-500"></i>
+                                추천수: <strong class="text-slate-800 font-bold ml-0.5">${bookLikes}</strong>명
+                            </span>
+                            <span class="text-xs text-slate-500 font-semibold flex items-center gap-1">
+                                <i data-lucide="message-circle" class="w-3.5 h-3.5 text-blue-500"></i>
+                                소중한 후기: <strong class="text-slate-800 font-bold ml-0.5">${bookReviews.length}</strong>개
+                            </span>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHTML;
+            });
+
+            // Refresh Lucide icon renderings
+            lucide.createIcons();
+        }
+
+        // --- STREAMING_CHUNK: Managing activities focus overlay interactions... ---
+        // Open Book in safe tab AND launch the exclusive feedback interface simultaneously
+        function startBookReadingAndActivity(bookId) {
+            const book = bookData.find(b => b.id === bookId);
+            if (!book) return;
+
+            // 1. Force Open in safe first-party browser tab (Zero iframe errors!)
+            window.open(book.url, '_blank');
+
+            // 2. Open the customized Focus Post-Reading Activity Panel
+            activeBookId = bookId;
+            openActivityOverlay(book);
+        }
+
+        function openActivityOverlay(book) {
+            const overlay = document.getElementById('activity-overlay');
+            const groupBadge = document.getElementById('activity-group-badge');
+            const titleEl = document.getElementById('activity-title');
+
+            groupBadge.innerText = `${book.group} / ${book.category} 그림책`;
+            titleEl.innerText = book.title;
+
+            // Re-render internal contents of this overlay
+            renderActiveOverlayElements();
+
+            overlay.classList.remove('hidden');
+        }
+
+        function closeActivityOverlay() {
+            document.getElementById('activity-overlay').classList.add('hidden');
+            activeBookId = null;
+            renderBooks(); // refresh cards stats
+            showToast("🏠 도서관 홈으로 안전하게 복귀했습니다.");
+        }
+
+        // Update elements within focus overlay (like reviews list & recommendation state)
+        function renderActiveOverlayElements() {
+            if (!activeBookId) return;
+
+            const book = bookData.find(b => b.id === activeBookId);
+            const likesCount = appState.likes[activeBookId] || 0;
+            const userLiked = appState.userLikes[activeBookId] || false;
+            const reviews = appState.reviews[activeBookId] || [];
+
+            // 1. Update Likes Badge
+            document.getElementById('activity-like-count').innerText = likesCount;
+
+            const likeBtn = document.getElementById('activity-like-btn');
+            const likeTxt = document.getElementById('activity-like-txt');
+
+            if (userLiked) {
+                likeBtn.className = "flex items-center justify-center gap-3 px-8 py-3 rounded-full text-base font-bold shadow-md transition-all duration-200 bg-amber-100 border-2 border-amber-400 text-amber-700";
+                likeTxt.innerText = "추천 완료! (엄지척 다시 누르면 취소돼요)";
+            } else {
+                likeBtn.className = "flex items-center justify-center gap-3 px-8 py-3 rounded-full text-base font-bold shadow-md transition-all duration-200 bg-white hover:bg-amber-50 border-2 border-slate-200 text-slate-700 hover:border-amber-400";
+                likeTxt.innerText = "친구들에게 엄지척 추천하기";
+            }
+
+            // 2. Render Comments Inside Overlay
+            const reviewsContainer = document.getElementById('activity-reviews-container');
+            if (reviews.length === 0) {
+                reviewsContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4 font-sans">아직 친구들이 작성한 한 줄 소감이 없어요. 첫 소감을 적어보세요!</p>`;
+            } else {
+                reviewsContainer.innerHTML = reviews.map(r => `
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm text-xs flex flex-col gap-1 relative group">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-slate-800">${escapeHTML(r.name)} 어린이</span>
+                            <span class="text-[10px] text-slate-400 font-sans">${r.date}</span>
+                        </div>
+                        <p class="text-slate-600 font-sans break-all leading-relaxed">${escapeHTML(r.content)}</p>
+                        <!-- Delete option (For school computers / Teacher controls) -->
+                        <button onclick="deleteActiveReview('${r.id}')" class="absolute right-2 bottom-2 text-slate-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 p-0.5">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            // Render newly added Lucide icons inside list
+            lucide.createIcons();
+        }
+
+        // Handle recommending within active overlay
+        function toggleActiveLike() {
+            if (!activeBookId) return;
+
+            const userLiked = appState.userLikes[activeBookId] || false;
+            if (!userLiked) {
+                appState.likes[activeBookId] += 1;
+                appState.userLikes[activeBookId] = true;
+                showToast("👍 엄지척 추천을 남겼습니다!");
+            } else {
+                appState.likes[activeBookId] -= 1;
+                appState.userLikes[activeBookId] = false;
+                showToast("추천을 취소했습니다.");
+            }
+            saveState();
+            renderActiveOverlayElements();
+        }
+
+        // Submitting comments inside overlay
+        function submitActiveReview() {
+            if (!activeBookId) return;
+
+            const nameInput = document.getElementById('activity-name');
+            const contentInput = document.getElementById('activity-content');
+
+            const name = nameInput.value.trim();
+            const content = contentInput.value.trim();
+
+            if (!name) {
+                showAlert("🚨 작성자 확인", "이름을 먼저 예쁘게 써주세요!", "🔴");
+                nameInput.focus();
+                return;
+            }
+            if (!content) {
+                showAlert("🚨 소감 입력", "그림책에서 재미있었거나 새로 배운 점을 짧게 한 줄 적어보세요!", "🔴");
+                contentInput.focus();
+                return;
+            }
+
+            const newReview = {
+                id: 'rev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                name: name,
+                content: content,
+                date: getTodayString()
+            };
+
+            appState.reviews[activeBookId].unshift(newReview);
+            saveState();
+
+            // Reset Input forms
+            nameInput.value = '';
+            contentInput.value = '';
+
+            showToast("💬 감상평 등록 완료!");
+            renderActiveOverlayElements();
+        }
+
+        // Delete active comments from within Overlay
+        function deleteActiveReview(reviewId) {
+            if (!activeBookId) return;
+
+            appState.reviews[activeBookId] = appState.reviews[activeBookId].filter(r => r.id !== reviewId);
+            saveState();
+            showToast("감상평이 안전하게 삭제되었습니다.");
+            renderActiveOverlayElements();
+        }
+
+        // --- STREAMING_CHUNK: Teacher panels and administrative actions... ---
+        function toggleTeacherPanel() {
+            const panel = document.getElementById('teacher-panel');
+            panel.classList.toggle('hidden');
+        }
+
+        // Generate CSV file compatible with MS Excel (BOM Included)
+        function exportReviewsCSV() {
+            let csvContent = "\uFEFF"; // UTF-8 BOM
+            csvContent += "구분(모둠),대분류,그림책 제목,추천수,작성 학생,작성일자,학생 한줄평\n";
+
+            bookData.forEach(book => {
+                const likes = appState.likes[book.id] || 0;
+                const reviews = appState.reviews[book.id] || [];
+
+                if (reviews.length === 0) {
+                    csvContent += `"${book.group}","${book.category}","${book.title}",${likes},"","","소중한 후기를 기다리는 중입니다."\n`;
+                } else {
+                    reviews.forEach(r => {
+                        const cleanName = r.name.replace(/"/g, '""');
+                        const cleanContent = r.content.replace(/"/g, '""');
+                        csvContent += `"${book.group}","${book.category}","${book.title}",${likes},"${cleanName}","${r.date}","${cleanContent}"\n`;
+                    });
+                }
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `김밥반_그림책도서관_활동결과_${getTodayString()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast("📊 후기 데이터가 엑셀용 CSV 파일로 다운로드되었습니다!");
+        }
+
+        // Admin Trigger: Clear all local storage
+        function confirmResetAll() {
+            showConfirm(
+                "⚠️ 전체 데이터를 지울까요?",
+                "모든 그림책의 '엄지척 추천' 수와 작성된 '한 줄 감상 평' 목록이 이 브라우저에서 영구적으로 사라집니다. 지우기 전 백업을 권장합니다.",
+                "🔴",
+                () => {
+                    appState = { likes: {}, userLikes: {}, reviews: {} };
+                    loadState();
+                    renderBooks();
+                    toggleTeacherPanel();
+                    showToast("🧹 모든 데이터가 완벽히 초기화되었습니다!");
+                }
+            );
+        }
+
+        // --- STREAMING_CHUNK: General UI Utility helpers (Toasts, modals, alerts)... ---
+        // Returns date string YYYY-MM-DD
+        function getTodayString() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // Prevent HTML scripts injection on comments
+        function escapeHTML(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Show floating message box
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'bg-slate-800 text-white text-xs px-4 py-3 rounded-xl shadow-lg border border-slate-700 font-sans flex items-center gap-2 animate-bounce transition-all duration-300';
+            toast.innerHTML = `<span>🔔</span> <span class="font-semibold">${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Show a custom popup alerts modal
+        function showAlert(title, message, emoji = '🔔') {
+            const modal = document.getElementById('custom-alert');
+            document.getElementById('alert-icon-container').innerText = emoji;
+            document.getElementById('alert-title').innerText = title;
+            document.getElementById('alert-message').innerText = message;
+            
+            document.getElementById('alert-buttons').innerHTML = `
+                <button onclick="closeAlert()" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-xl font-semibold text-xs transition">확인</button>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        // Show a custom confirm trigger action
+        function showConfirm(title, message, emoji = '❓', onConfirm) {
+            const modal = document.getElementById('custom-alert');
+            document.getElementById('alert-icon-container').innerText = emoji;
+            document.getElementById('alert-title').innerText = title;
+            document.getElementById('alert-message').innerText = message;
+            
+            window.activeConfirmAction = onConfirm;
+            document.getElementById('alert-buttons').innerHTML = `
+                <button onclick="closeAlert()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded-xl font-semibold text-xs transition">취소</button>
+                <button onclick="executeConfirmAction()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-semibold text-xs transition">데이터 리셋</button>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function executeConfirmAction() {
+            if (typeof window.activeConfirmAction === 'function') {
+                window.activeConfirmAction();
+            }
+            closeAlert();
+        }
+
+        function closeAlert() {
+            document.getElementById('custom-alert').classList.add('hidden');
+            window.activeConfirmAction = null;
+        }
+
+        // Modal Helpers
+        function showHelpModal() {
+            document.getElementById('help-modal').classList.remove('hidden');
+        }
+
+        function hideHelpModal() {
+            document.getElementById('help-modal').classList.add('hidden');
+        }
+
+        function showTroubleModal() {
+            document.getElementById('trouble-modal').classList.remove('hidden');
+        }
+
+        function hideTroubleModal() {
+            document.getElementById('trouble-modal').classList.add('hidden');
+        }
+
+        // --- Initialize Everything On Load ---
+        window.onload = function() {
+            loadState();
+            renderBooks();
+            
+            // First Launch Tutorial trigger
+            if (!localStorage.getItem('gimbap_library_first_run_v3')) {
+                showHelpModal();
+                localStorage.setItem('gimbap_library_first_run_v3', 'done');
+            }
+        };
+    </script>
+</body>
+</html>
